@@ -1,0 +1,52 @@
+# cluster rag.cognix versions
+# milvus:v2.4.0
+# nats:2.10.14
+# cockroach-operator:v2.12.0 which is using cockroach:v23.1.11
+
+# need to do give docker permissions on loval volumes
+# id -gn    # to find out the group name for your user:
+# Use the group name obtained from the above command to set the correct permissions. Assuming the output of id -gn is staff, the command would be:
+# sudo chown -R $(whoami):staff /Users/gp/Developer/cognix/data
+# sudo chown -R $(whoami):staff /Users/gp/Developer/cognix/data
+# Create the Required Directories:
+# sudo mkdir -p /Users/gp/Developer/cognix/data/etcd
+# sudo mkdir -p /Users/gp/Developer/cognix/data/minio
+# sudo mkdir -p /Users/gp/Developer/cognix/data/cockroach
+# sudo mkdir -p /Users/gp/Developer/cognix/data/nats
+# sudo mkdir -p /Users/gp/Developer/cognix/data/milvus
+# Set Correct Permissions:
+# sudo chown -R $(whoami):staff /Users/gp/Developer/cognix/data
+# Run Docker Compose with Sudo:
+# sudo docker-compose -f deployment/docker-compose-test.yaml up
+
+version: '3.8'
+networks:
+  cognix-network:
+    # external: true
+    name: cognix-network
+
+services:
+
+  cognix-web:
+    container_name: web-ui
+    image: gen-mind/cognix-web:latest
+    build:
+      context: ../src/web
+      dockerfile: Dockerfile.cloud
+    ports:
+      - "5173:80"
+    environment:
+      VITE_PLATFORM_API_URL: http://api:8080
+    env_file:
+      - ${CONFIG_PATH}/web_srv.env
+    networks:
+      - cognix-network
+
+
+volumes:
+  nats-storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../data/nats

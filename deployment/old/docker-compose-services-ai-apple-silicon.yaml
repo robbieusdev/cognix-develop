@@ -1,0 +1,161 @@
+version: '3.8' 
+networks:
+  cognix-network:
+    external: true
+    name: cognix-network
+
+services:
+  embedder:
+
+    image: cognix/embedder:latest
+    build:
+      context: ../python/embedder/
+      dockerfile: Dockerfile
+    container_name: embedder
+    ports:
+      - "50051:50051"
+    volumes:
+      - ../data/models:/models
+    env_file:
+      - ../config/embedder.env
+    restart: always
+    networks:
+      - cognix-network
+  
+  # semantic:
+  #   build:
+  #     context: ${COGNIX_PATH}
+  #     dockerfile: docker/Dockerfile-semantic
+  #     args:
+  #       - COGNIX_PATH=${COGNIX_PATH}
+  #   image: semantic:latest
+  #   container_name: semantic
+  #   volumes:
+  #     - ${DATA_PATH}/models:/models
+  #   env_file:
+  #     - ${CONFIG_PATH}/semantic.env
+  #   networks:
+  #     - cognix-network
+
+  
+  # *****************************
+  #         Milvus   
+  # *****************************
+
+  # requirements RAM 16GB - 4+ vCPU
+  # https://milvus.io/docs/prerequisite-docker.md 
+
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-..}/volumes/etcd:/etcd
+    command: etcd -listen-peer-urls=http://127.0.0.1:2380 -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 -initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster default=http://127.0.0.1:2380
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+      - "4001:4001"
+
+  pulsar:
+    image: milvusdb/pulsar:v2.8.2-m1
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-..}/volumes/pulsar:/pulsar/data
+    environment:
+      # bin/apply-config-from-env.py script will modify the configuration file based on the environment variables
+      # nettyMaxFrameSizeBytes must be calculated from maxMessageSize + 10240 (padding)
+      - nettyMaxFrameSizeBytes=104867840 # this is 104857600 + 10240 (padding)
+      - defaultRetentionTimeInMinutes=10080
+      - defaultRetentionSizeInMB=8192
+      # maxMessageSize is missing from standalone.conf, must use PULSAR_PREFIX_ to get it configured
+      - PULSAR_PREFIX_maxMessageSize=104857600
+      - PULSAR_GC=-XX:+UseG1GC
+    ports:
+      - "6650:6650"
+      - "18080:8080"
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-..}/volumes/minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-..}/volumes/azurite:/data
+    command: azurite-blob --blobHost 0.0.0.0
+    ports:
+      - "10000:10000"
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "4317:4317" # OLTP over gRPC
+      - "4318:4318" # OLTP over HTTP
+      - "16686:16686" # frontent
+      - "14268:14268" # jaeger.thirft
+  # *****************************
+  
+  # *****************************
+  # NATS
+  # *****************************
+  nats:
+    image: nats:latest  # Use the latest NATS image
+    container_name: nats
+    ports:
+      - "4222:4222"  # Client connections to NATS
+      - "8222:8222"  # HTTP monitoring port for NATS
+      - "6222:6222"  # Cluster port for NATS
+    volumes:
+      - nats-storage:../data/nats
+    command:
+      - "--name=nats"
+      - "--http_port=8222"
+      - "--js"
+      - "--sd=../data/nats"
+    networks:
+      - cognix-network
+  
+  # *****************************
+  # cockroach
+  # *****************************
+  cockroach:
+    image: cockroachdb/cockroach:latest-v23.2
+    ports:
+      - "26257:26257"
+      - "28080:8080"
+    command: start-single-node --insecure
+    volumes:
+      - "../data/cockroach:/cockroach/cockroach-data"
+    networks:
+      - cognix-network
+
+  # *****************************
+
+volumes:
+  nats-storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../data/nats
+# *****************************
+
+

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestratorservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestratorservice
+  template:
+    metadata:
+      labels:
+        app: orchestratorservice
+    spec:
+      containers:
+      - name: orchestratorservice
+        image: cognixacr.azurecr.io/cognix/orchestratorservice:main
+        envFrom:
+        - configMapRef:
+            name: orchestrator-srv
+        - configMapRef:
+            name: cockroach-cli
+        - configMapRef:
+            name: nats-cli
+        - configMapRef:
+            name: env-configmap
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /backend
+          name: storage-volume
+      imagePullSecrets:
+        - name: pullsecret
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: storage-volume
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: storage-volume
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: azurefile-csi

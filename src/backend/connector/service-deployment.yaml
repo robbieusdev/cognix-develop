@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connectorservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: connectorservice
+  template:
+    metadata:
+      labels:
+        app: connectorservice
+    spec:
+      containers:
+      - name: connectorservice
+        image: cognixacr.azurecr.io/cognix/connectorservice:main
+        envFrom:
+        - configMapRef:
+            name: connector-srv
+        - configMapRef:
+            name: cockroach-cli
+        - configMapRef:
+            name: minio-cli
+        - configMapRef:
+            name: milvus-cli
+        - configMapRef:
+            name: nats-cli
+        - configMapRef:
+            name: oauth-cli
+        - configMapRef:
+            name: env-configmap
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /backend
+          name: storage-volume
+      imagePullSecrets:
+        - name: pullsecret
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: storage-volume
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: storage-volume
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: azurefile-csi

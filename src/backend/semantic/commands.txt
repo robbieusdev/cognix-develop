@@ -1,0 +1,77 @@
+
+
+# build a container
+sudo docker build . -t cognix/embedder:latest
+sudo docker build . -t cognix/semantic:latest
+
+# run container
+docker run --name embedder cognix/embedder:latest
+docker run --name semantic cognix/semantic:latest
+
+#log inside a container
+docker exec -it CONTAINER_NAME sh
+
+df
+
+# interactive shell
+docker run -it --entrypoint /bin/sh cognix/embedder:latest
+
+# cleans a lot of space
+docker system prune
+
+# resources (cpu/ram) usage by container 
+docker stats
+docker stats {conteiner name}
+
+from cognix-services
+sudo docker-compose -f deployment/docker-compose-cognix.yaml down
+sudo docker-compose -f deployment/docker-compose-cognix.yaml up
+
+sudo docker-compose -f deployment/docker-compose-test.yaml up --build semantic --force-recreate
+
+
+To generate python objects out of proto files
+Attention this is the right command I got severe troubles 
+python -m grpc_tools.protoc -I .  --python_out=. --pyi_out=. --grpc_python_out=. protos/embed_service.proto
+
+python3 -m grpc_tools.protoc -I .  --python_out=. --pyi_out=. --grpc_python_out=. semantic_data.proto
+
+
+
+
+You can solve the problem by set up "protoc" options.
+
+Go into settings > Extensions > vscode-proto3 configuration and then click Edit in settings.json. (you can just edit .vscode/settings.json too.)
+
+"protoc": {
+"path": "/usr/local/bin/protoc",
+"options": [
+"--proto_path=${workspaceRoot}/common/proto",
+]
+}
+
+python3 -m semantic.semantic_service
+
+
+pod configuration
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sentence-transformer
+spec:
+  containers:
+  - name: sentence-transformer
+    image: your-docker-image
+    resources:
+      requests:
+        memory: "4Gi"  # Start with 4GiB for a medium-sized model
+        cpu: "2000m"   # 2 vCPUs
+      limits:
+        memory: "8Gi"  # Allow up to 8GiB for peak usage
+        cpu: "4000m"   # Allow up to 4 vCPUs
+
+pycharm debug
+Run to next breakpoint: F9
+Step Over: F8
+Step Into: F7

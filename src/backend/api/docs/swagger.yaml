@@ -1,0 +1,1091 @@
+basePath: /api
+definitions:
+  decimal.NullDecimal:
+    properties:
+      decimal:
+        type: number
+      valid:
+        type: boolean
+    type: object
+  model.ChatMessage:
+    properties:
+      chat_session_id:
+        type: number
+      citations:
+        items:
+          $ref: '#/definitions/model.DocumentResponse'
+        type: array
+      error:
+        type: string
+      feedback:
+        $ref: '#/definitions/model.ChatMessageFeedback'
+      id:
+        type: number
+      latest_child_message:
+        type: integer
+      message:
+        type: string
+      message_type:
+        type: string
+      parent_message:
+        type: number
+      rephrased_query:
+        type: string
+      time_sent:
+        type: string
+      token_count:
+        type: integer
+    type: object
+  model.ChatMessageFeedback:
+    properties:
+      chat_message_id:
+        type: number
+      feedback:
+        type: string
+      id:
+        type: number
+      up_votes:
+        type: boolean
+      user_id:
+        type: string
+    type: object
+  model.ChatSession:
+    properties:
+      creation_date:
+        type: string
+      deleted_date:
+        $ref: '#/definitions/pg.NullTime'
+      description:
+        type: string
+      id:
+        type: number
+      messages:
+        items:
+          $ref: '#/definitions/model.ChatMessage'
+        type: array
+      one_shot:
+        type: boolean
+      persona:
+        $ref: '#/definitions/model.Persona'
+      persona_id:
+        type: number
+      user_id:
+        type: string
+    type: object
+  model.Connector:
+    properties:
+      connector_specific_config:
+        $ref: '#/definitions/model.JSONMap'
+      creation_date:
+        type: string
+      deleted_date:
+        $ref: '#/definitions/pg.NullTime'
+      docs:
+        items:
+          $ref: '#/definitions/model.Document'
+        type: array
+      docs_map:
+        additionalProperties:
+          $ref: '#/definitions/model.Document'
+        type: object
+      id:
+        type: number
+      last_successful_analysis:
+        $ref: '#/definitions/pg.NullTime'
+      last_update:
+        $ref: '#/definitions/pg.NullTime'
+      name:
+        type: string
+      refresh_freq:
+        type: integer
+      source:
+        $ref: '#/definitions/model.SourceType'
+      status:
+        type: string
+      tenant_id:
+        $ref: '#/definitions/uuid.NullUUID'
+      total_docs_indexed:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  model.Document:
+    properties:
+      analyzed:
+        type: boolean
+      chunking_session:
+        $ref: '#/definitions/uuid.NullUUID'
+      connector_id:
+        type: number
+      creation_date:
+        type: string
+      id:
+        type: number
+      last_update:
+        $ref: '#/definitions/pg.NullTime'
+      parent_id:
+        $ref: '#/definitions/decimal.NullDecimal'
+      signature:
+        type: string
+      source_id:
+        type: string
+      url:
+        type: string
+    type: object
+  model.DocumentResponse:
+    properties:
+      content:
+        type: string
+      document_id:
+        type: string
+      id:
+        type: number
+      link:
+        type: string
+      message_id:
+        type: number
+      updated_date:
+        type: string
+    type: object
+  model.EmbeddingModel:
+    properties:
+      creation_date:
+        type: string
+      deleted_date:
+        $ref: '#/definitions/pg.NullTime'
+      id:
+        type: number
+      is_active:
+        type: boolean
+      last_update:
+        $ref: '#/definitions/pg.NullTime'
+      model_dim:
+        type: integer
+      model_id:
+        type: string
+      model_name:
+        type: string
+      tenant_id:
+        type: string
+      url:
+        type: string
+    type: object
+  model.JSONMap:
+    additionalProperties: true
+    type: object
+  model.LLM:
+    properties:
+      api_key:
+        type: string
+      creation_date:
+        type: string
+      deleted_date:
+        $ref: '#/definitions/pg.NullTime'
+      endpoint:
+        type: string
+      id:
+        type: number
+      last_update:
+        $ref: '#/definitions/pg.NullTime'
+      model_id:
+        type: string
+      name:
+        type: string
+      tenant_id:
+        type: string
+      url:
+        type: string
+    type: object
+  model.Persona:
+    properties:
+      chat_sessions:
+        items:
+          $ref: '#/definitions/model.ChatSession'
+        type: array
+      creation_date:
+        type: string
+      default_persona:
+        type: boolean
+      deleted_date:
+        $ref: '#/definitions/pg.NullTime'
+      description:
+        type: string
+      display_priority:
+        type: integer
+      id:
+        type: number
+      is_visible:
+        type: boolean
+      last_update:
+        $ref: '#/definitions/pg.NullTime'
+      llm:
+        $ref: '#/definitions/model.LLM'
+      llm_id:
+        type: number
+      name:
+        type: string
+      prompt:
+        $ref: '#/definitions/model.Prompt'
+      starter_messages:
+        items:
+          type: integer
+        type: array
+      tenant_id:
+        type: string
+    type: object
+  model.Prompt:
+    properties:
+      creation_date:
+        type: string
+      deleted_date:
+        $ref: '#/definitions/pg.NullTime'
+      description:
+        type: string
+      id:
+        type: number
+      last_update:
+        $ref: '#/definitions/pg.NullTime'
+      name:
+        type: string
+      persona_id:
+        type: number
+      system_prompt:
+        type: string
+      task_prompt:
+        type: string
+      user_id:
+        type: string
+    type: object
+  model.SourceType:
+    enum:
+    - ingestion_api
+    - slack
+    - web
+    - google_drive
+    - gmail
+    - requesttracker
+    - github
+    - gitlab
+    - guru
+    - bookstack
+    - confluence
+    - slab
+    - jira
+    - productboard
+    - file
+    - notion
+    - zulip
+    - linear
+    - hubspot
+    - document360
+    - gong
+    - google_sites
+    - zendesk
+    - loopio
+    - sharepoint
+    - one-drive
+    - msteams
+    - youtube
+    type: string
+    x-enum-varnames:
+    - SourceTypeIngestionApi
+    - SourceTypeSlack
+    - SourceTypeWEB
+    - SourceTypeGoogleDrive
+    - SourceTypeGMAIL
+    - SourceTypeRequesttracker
+    - SourceTypeGithub
+    - SourceTypeGitlab
+    - SourceTypeGuru
+    - SourceTypeBookstack
+    - SourceTypeConfluence
+    - SourceTypeSlab
+    - SourceTypeJira
+    - SourceTypeProductboard
+    - SourceTypeFile
+    - SourceTypeNotion
+    - SourceTypeZulip
+    - SourceTypeLinear
+    - SourceTypeHubspot
+    - SourceTypeDocument360
+    - SourceTypeGong
+    - SourceTypeGoogleSites
+    - SourceTypeZendesk
+    - SourceTypeLoopio
+    - SourceTypeSharepoint
+    - SourceTypeOneDrive
+    - SourceTypeMsTeams
+    - SourceTypeYoutube
+  model.SourceTypeDescription:
+    properties:
+      id:
+        $ref: '#/definitions/model.SourceType'
+      isImplemented:
+        type: boolean
+      name:
+        type: string
+    type: object
+  model.Tenant:
+    properties:
+      configuration:
+        $ref: '#/definitions/model.JSONMap'
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  model.User:
+    properties:
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      roles:
+        items:
+          type: string
+        type: array
+      tenant:
+        $ref: '#/definitions/model.Tenant'
+      tenant_id:
+        type: string
+      user_name:
+        type: string
+    type: object
+  parameters.AddUserParam:
+    properties:
+      email:
+        type: string
+      role:
+        type: string
+    type: object
+  parameters.CreateChatMessageRequest:
+    properties:
+      chat_session_id:
+        type: number
+      message:
+        type: string
+      no_ai_answer:
+        type: boolean
+      parent_message_id:
+        type: number
+      prompt_id:
+        type: number
+      query_override:
+        description: RetrievalOptions RetrievalDetails  `json:"retrieval_options,omitempty"`
+        type: string
+      search_doc_ids:
+        items:
+          type: number
+        type: array
+    type: object
+  parameters.CreateChatSession:
+    properties:
+      description:
+        type: string
+      one_shot:
+        type: boolean
+      persona_id:
+        type: number
+    type: object
+  parameters.CreateConnectorParam:
+    properties:
+      connector_specific_config:
+        $ref: '#/definitions/model.JSONMap'
+      disabled:
+        type: boolean
+      name:
+        type: string
+      refresh_freq:
+        type: integer
+      shared:
+        type: boolean
+      source:
+        type: string
+    type: object
+  parameters.EditUserParam:
+    properties:
+      role:
+        type: string
+    type: object
+  parameters.EmbeddingModelParam:
+    properties:
+      is_active:
+        type: boolean
+      model_dim:
+        type: integer
+      model_id:
+        type: string
+      model_name:
+        type: string
+      url:
+        type: string
+    type: object
+  parameters.MessageFeedbackParam:
+    properties:
+      id:
+        type: number
+      vote:
+        type: string
+    type: object
+  parameters.PersonaParam:
+    properties:
+      api_key:
+        type: string
+      description:
+        type: string
+      endpoint:
+        type: string
+      model_id:
+        type: string
+      name:
+        type: string
+      starter_messages:
+        items:
+          $ref: '#/definitions/parameters.StarterMessage'
+        type: array
+      system_prompt:
+        type: string
+      task_prompt:
+        type: string
+      url:
+        type: string
+    type: object
+  parameters.StarterMessage:
+    properties:
+      description:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+    type: object
+  parameters.UpdateConnectorParam:
+    properties:
+      connector_specific_config:
+        $ref: '#/definitions/model.JSONMap'
+      name:
+        type: string
+      refresh_freq:
+        type: integer
+      shared:
+        type: boolean
+      status:
+        type: string
+    type: object
+  pg.NullTime:
+    properties:
+      time.Time:
+        type: string
+    type: object
+  uuid.NullUUID:
+    properties:
+      uuid:
+        type: string
+      valid:
+        description: Valid is true if UUID is not NULL
+        type: boolean
+    type: object
+info:
+  contact:
+    name: API Support
+  description: This is Cognix Golang API Documentation
+  title: Cognix API
+  version: "1.0"
+paths:
+  /auth/google/login:
+    get:
+      description: login using google auth
+      operationId: auth_login
+      parameters:
+      - description: redirect base url
+        in: query
+        name: redirect_url
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: login using google auth
+      tags:
+      - Auth
+  /chats/create-chat-session:
+    post:
+      description: creates new chat session
+      operationId: chat_create_session
+      parameters:
+      - description: create session parameters
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.CreateChatSession'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ChatSession'
+      security:
+      - ApiKeyAuth: []
+      summary: creates new chat session
+      tags:
+      - Chat
+  /chats/get-chat-session/{id}:
+    get:
+      description: return chat session with messages by given id
+      operationId: chat_get_by_id
+      parameters:
+      - description: session id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ChatSession'
+      security:
+      - ApiKeyAuth: []
+      summary: return chat session with messages by given id
+      tags:
+      - Chat
+  /chats/get-user-chat-sessions:
+    get:
+      description: return list of chat sessions for current user
+      operationId: chat_get_sessions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.ChatSession'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: return list of chat sessions for current user
+      tags:
+      - Chat
+  /chats/message/feedback:
+    post:
+      description: add  feedback to message
+      operationId: chat_message_feedback
+      parameters:
+      - description: send message parameters
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.MessageFeedbackParam'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ChatMessageFeedback'
+      security:
+      - ApiKeyAuth: []
+      summary: add  feedback to message
+      tags:
+      - Chat
+  /chats/send-message:
+    post:
+      description: send message and wait stream response
+      operationId: chat_send_message
+      parameters:
+      - description: send message parameters
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.CreateChatMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ChatMessage'
+      security:
+      - ApiKeyAuth: []
+      summary: send message and wait stream response
+      tags:
+      - Chat
+  /manage/connector:
+    get:
+      description: return list of allowed connectors
+      operationId: connectors_get_all
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Connector'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: return list of allowed connectors
+      tags:
+      - Connectors
+  /manage/connector/:
+    post:
+      description: creates connector
+      operationId: connectors_create
+      parameters:
+      - description: connector create parameter
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.CreateConnectorParam'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Connector'
+      security:
+      - ApiKeyAuth: []
+      summary: creates connector
+      tags:
+      - Connectors
+  /manage/connector/{id}:
+    get:
+      description: return list of allowed connectors
+      operationId: connectors_get_by_id
+      parameters:
+      - description: connector id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Connector'
+      security:
+      - ApiKeyAuth: []
+      summary: return list of allowed connectors
+      tags:
+      - Connectors
+    put:
+      description: updates connector
+      operationId: connectors_update
+      parameters:
+      - description: connector id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: connector update parameter
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.UpdateConnectorParam'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Connector'
+      security:
+      - ApiKeyAuth: []
+      summary: updates connector
+      tags:
+      - Connectors
+  /manage/connector/{id}/{action}:
+    post:
+      description: delete or restore connector
+      operationId: Connectors_delete_restore
+      parameters:
+      - description: Connectors id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'action : delete | restore '
+        in: path
+        name: action
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Connector'
+      security:
+      - ApiKeyAuth: []
+      summary: delete or restore connector
+      tags:
+      - Connectors
+  /manage/connector/source_types:
+    get:
+      description: return list of source types
+      operationId: connectors_get_source_types
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.SourceTypeDescription'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: return list of source types
+      tags:
+      - Connectors
+  /manage/embedding_models:
+    get:
+      description: return list of embedding models
+      operationId: embedding_model_get_all
+      parameters:
+      - description: true for include deleted embedding models
+        in: query
+        name: archived
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.EmbeddingModel'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: return list of embedding models
+      tags:
+      - EmbeddingModel
+    post:
+      description: creates embedding models
+      operationId: embedding_model_create
+      parameters:
+      - description: embedding model parameter
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.EmbeddingModelParam'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.EmbeddingModel'
+      security:
+      - ApiKeyAuth: []
+      summary: creates embedding models
+      tags:
+      - EmbeddingModel
+  /manage/embedding_models/{id}:
+    get:
+      description: return embedding model by id
+      operationId: embedding_model_get_by_id
+      parameters:
+      - description: embedding model id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.EmbeddingModel'
+      security:
+      - ApiKeyAuth: []
+      summary: return embedding model by id
+      tags:
+      - EmbeddingModel
+    put:
+      description: updates embedding model
+      operationId: embedding_model_update
+      parameters:
+      - description: embedding model id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: embedding model parameter
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.EmbeddingModelParam'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.EmbeddingModel'
+      security:
+      - ApiKeyAuth: []
+      summary: updates embedding model
+      tags:
+      - EmbeddingModel
+  /manage/embedding_models/{id}/{action}:
+    post:
+      description: delete or restore embedding model
+      operationId: embedding_model_delete
+      parameters:
+      - description: embedding model id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'action : delete | restore '
+        in: path
+        name: action
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.EmbeddingModel'
+      security:
+      - ApiKeyAuth: []
+      summary: delete or restore embedding model
+      tags:
+      - EmbeddingModel
+  /manage/personas:
+    get:
+      description: return list of allowed personas
+      operationId: personas_get_all
+      parameters:
+      - description: true for include deleted personas
+        in: query
+        name: archived
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Persona'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: return list of allowed personas
+      tags:
+      - Persona
+    post:
+      description: create persona
+      operationId: persona_create
+      parameters:
+      - description: persona payload
+        in: body
+        name: id
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.PersonaParam'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Persona'
+      security:
+      - ApiKeyAuth: []
+      summary: create persona
+      tags:
+      - Persona
+  /manage/personas/{id}:
+    get:
+      description: return persona by id
+      operationId: persona_get_by_id
+      parameters:
+      - description: persona id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Persona'
+      security:
+      - ApiKeyAuth: []
+      summary: return persona by id
+      tags:
+      - Persona
+    put:
+      description: update persona
+      operationId: persona_update
+      parameters:
+      - description: persona id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: persona payload
+        in: body
+        name: id
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.PersonaParam'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Persona'
+      security:
+      - ApiKeyAuth: []
+      summary: update persona
+      tags:
+      - Persona
+  /manage/personas/{id}/{action}:
+    post:
+      description: delete or restore persona
+      operationId: persona_delete_restore
+      parameters:
+      - description: persona id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'action : delete | restore '
+        in: path
+        name: action
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Persona'
+      security:
+      - ApiKeyAuth: []
+      summary: delete or restore persona
+      tags:
+      - Persona
+  /tenant/user_info:
+    get:
+      description: get user info
+      operationId: tenant_get_user_info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+      security:
+      - ApiKeyAuth: []
+      summary: get user info
+      tags:
+      - Tenant
+  /tenant/users:
+    get:
+      description: return list of users
+      operationId: tenant_get_users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.User'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: return list of users
+      tags:
+      - Tenant
+    post:
+      description: add new user
+      operationId: tenant_add_user
+      parameters:
+      - description: create user parameter
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.AddUserParam'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+      security:
+      - ApiKeyAuth: []
+      summary: add new user
+      tags:
+      - Tenant
+  /tenant/users/{id}:
+    put:
+      description: edit  user
+      operationId: tenant_edit_user
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: edit user parameter
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/parameters.EditUserParam'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+      security:
+      - ApiKeyAuth: []
+      summary: edit user
+      tags:
+      - Tenant
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

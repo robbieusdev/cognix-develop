@@ -1,0 +1,7 @@
+services:
+  ui:
+    image: cognix:ui
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    network_mode: host

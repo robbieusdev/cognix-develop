@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: semantic
+  template:
+    metadata:
+      labels:
+        app: semantic
+    spec:
+      containers:
+      - name: semantic
+        image: cognixacr.azurecr.io/cognix/semantic:main
+        envFrom:
+        - configMapRef:
+            name: semantic-srv
+        - configMapRef:
+            name: milvus-cli
+        - configMapRef:
+            name: nats-cli
+        - configMapRef:
+            name: embedder-cli
+        - configMapRef:
+            name: cockroach-cli                       
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /temp
+          name: temp-volume
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          initialDelaySeconds: 180
+          timeoutSeconds: 3
+          periodSeconds: 60
+          failureThreshold: 3
+          successThreshold: 1
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+        livenessProbe:
+          initialDelaySeconds: 60
+          timeoutSeconds: 3
+          periodSeconds: 60
+          failureThreshold: 60
+          successThreshold: 1
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP             
+      imagePullSecrets:
+        - name: pullsecret          
+      volumes:
+      - name: temp-volume
+        emptyDir: {}

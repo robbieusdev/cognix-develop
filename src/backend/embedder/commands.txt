@@ -1,0 +1,76 @@
+
+
+# build a container
+sudo docker build -t cognix/embedder:latest 
+
+# run container
+docker run --name embedder cognix/embedder:latest
+
+#log inside a container
+docker exec -it CONTAINER_NAME sh
+
+df
+
+# interactive shell
+docker run -it --entrypoint /bin/sh cognix/embedder:latest
+
+# cleans a lot of space
+docker system prune
+
+
+from cognix-services
+sudo docker-compose -f deployment/docker-compose-services-ai.yaml down
+sudo docker-compose -f deployment/docker-compose-services-ai.yaml up
+
+
+es, it is possible to create symbolic links (symlinks) in your file system, and Visual Studio Code (VS Code) will treat them as regular files. This allows you to reference files located in different directories without moving the actual files.
+
+Here's how you can create a symlink for a file or directory:
+
+
+Visual Studio Code terminal shows multiple Conda envs
+execute conda config --set auto_activate_base False or 
+turn off "Activate Python Environment in all Terminals created" setting in the Python extension configuration in VSCode.
+
+To generate python objects out of proto files
+Attention this is the right command I got sever troubles 
+python -m grpc_tools.protoc -I .  --python_out=. --pyi_out=. --grpc_python_out=. protos/embed_service.proto
+
+python3 -m grpc_tools.protoc -I .  --python_out=. --pyi_out=. --grpc_python_out=. embedd_service.proto
+
+
+
+
+You can solve the problem by set up "protoc" options.
+
+Go into settings > Extensions > vscode-proto3 configuration and then click Edit in settings.json. (you can just edit .vscode/settings.json too.)
+
+"protoc": {
+"path": "/usr/local/bin/protoc",
+"options": [
+"--proto_path=${workspaceRoot}/common/proto",
+]
+}
+
+python3 -m chunker.chunker_service
+
+
+pod configuration
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sentence-transformer
+spec:
+  containers:
+  - name: sentence-transformer
+    image: your-docker-image
+    resources:
+      requests:
+        memory: "4Gi"  # Start with 4GiB for a medium-sized model
+        cpu: "2000m"   # 2 vCPUs
+      limits:
+        memory: "8Gi"  # Allow up to 8GiB for peak usage
+        cpu: "4000m"   # Allow up to 4 vCPUs
+
+

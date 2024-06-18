@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ui
+  template:
+    metadata:
+      labels:
+        app: ui
+    spec:
+      containers:
+      - name: ui
+        image: cognixacr.azurecr.io/cognix/ui:main
+        imagePullPolicy: Always
+        env:
+        - name: VITE_PLATFORM_API_URL
+          value: https://rag.cognix.ch
+        envFrom:
+        - configMapRef:
+            name: web-srv
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+        - name: pullsecret

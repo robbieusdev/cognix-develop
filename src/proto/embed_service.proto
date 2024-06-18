@@ -1,0 +1,18 @@
+// gRPC Service
+syntax = "proto3";
+
+package com.embedd;
+option go_package = "backend/core/proto;proto";
+
+message EmbedRequest {
+    string content = 1;
+    string model = 2;
+}
+
+message EmbedResponse {
+    repeated float vector = 1;
+}
+
+service EmbedService {
+    rpc GetEmbeding (EmbedRequest) returns (EmbedResponse) {}
+}

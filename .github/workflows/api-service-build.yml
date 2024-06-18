@@ -1,0 +1,76 @@
+name: Build api service
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# on:
+#   push:
+#     tags:
+#       - '*'
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/backend/api/**'
+      - 'src/backend/core/**'
+      - 'src/backend/go.mod'
+      - '.github/workflows/api-service-build.yml'
+env:
+  RGNAME: AKS_RG
+  ACRNAME: cognixacr
+  AKSNAME: Cognix_AKS
+  GITHUB_SHA: ${{ github.sha }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to ACR
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.ACRNAME }}.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    - name: API Service Image Docker Build and Push
+      uses: docker/build-push-action@v2
+      with:
+        context: ./src/backend
+        file: ./src/backend/Dockerfile
+        platforms: linux/amd64
+        push: true
+        tags: |
+          ${{ env.ACRNAME }}.azurecr.io/cognix/apiservice:${{env.GITHUB_SHA}}
+        build-args: |
+          COGNIX_VERSION=${{env.GITHUB_SHA}}
+          service=api
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Get AKS kubeconfig
+      run: az aks get-credentials --resource-group $RGNAME --name $AKSNAME
+
+    - name: Update API server manifest
+      run:
+        sed -ie "s/apiservice:main/apiservice:${{env.GITHUB_SHA}}/g" ./src/backend/api/api-service-deployment.yaml
+
+    - name: Deploy API server manifests
+      run: |
+        kubectl apply -f ./src/backend/api/api-service-deployment.yaml 
+
+    - name: Delete API server pod
+      run: |
+        kubectl rollout restart deploy/apiservice

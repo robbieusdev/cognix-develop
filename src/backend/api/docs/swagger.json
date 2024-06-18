@@ -1,0 +1,1672 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is Cognix Golang API Documentation",
+        "title": "Cognix API",
+        "contact": {
+            "name": "API Support"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/api",
+    "paths": {
+        "/auth/google/login": {
+            "get": {
+                "description": "login using google auth",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "login using google auth",
+                "operationId": "auth_login",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "redirect base url",
+                        "name": "redirect_url",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/chats/create-chat-session": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "creates new chat session",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "creates new chat session",
+                "operationId": "chat_create_session",
+                "parameters": [
+                    {
+                        "description": "create session parameters",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.CreateChatSession"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ChatSession"
+                        }
+                    }
+                }
+            }
+        },
+        "/chats/get-chat-session/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return chat session with messages by given id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "return chat session with messages by given id",
+                "operationId": "chat_get_by_id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "session id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ChatSession"
+                        }
+                    }
+                }
+            }
+        },
+        "/chats/get-user-chat-sessions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return list of chat sessions for current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "return list of chat sessions for current user",
+                "operationId": "chat_get_sessions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ChatSession"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/chats/message/feedback": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "add  feedback to message",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "add  feedback to message",
+                "operationId": "chat_message_feedback",
+                "parameters": [
+                    {
+                        "description": "send message parameters",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.MessageFeedbackParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ChatMessageFeedback"
+                        }
+                    }
+                }
+            }
+        },
+        "/chats/send-message": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "send message and wait stream response",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "send message and wait stream response",
+                "operationId": "chat_send_message",
+                "parameters": [
+                    {
+                        "description": "send message parameters",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.CreateChatMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ChatMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/connector": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return list of allowed connectors",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Connectors"
+                ],
+                "summary": "return list of allowed connectors",
+                "operationId": "connectors_get_all",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Connector"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/connector/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "creates connector",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Connectors"
+                ],
+                "summary": "creates connector",
+                "operationId": "connectors_create",
+                "parameters": [
+                    {
+                        "description": "connector create parameter",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.CreateConnectorParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Connector"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/connector/source_types": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return list of source types",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Connectors"
+                ],
+                "summary": "return list of source types",
+                "operationId": "connectors_get_source_types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.SourceTypeDescription"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/connector/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return list of allowed connectors",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Connectors"
+                ],
+                "summary": "return list of allowed connectors",
+                "operationId": "connectors_get_by_id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "connector id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Connector"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "updates connector",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Connectors"
+                ],
+                "summary": "updates connector",
+                "operationId": "connectors_update",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "connector id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "connector update parameter",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.UpdateConnectorParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Connector"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/connector/{id}/{action}": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "delete or restore connector",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Connectors"
+                ],
+                "summary": "delete or restore connector",
+                "operationId": "Connectors_delete_restore",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Connectors id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "action : delete | restore ",
+                        "name": "action",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Connector"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/embedding_models": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return list of embedding models",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EmbeddingModel"
+                ],
+                "summary": "return list of embedding models",
+                "operationId": "embedding_model_get_all",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "true for include deleted embedding models",
+                        "name": "archived",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.EmbeddingModel"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "creates embedding models",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EmbeddingModel"
+                ],
+                "summary": "creates embedding models",
+                "operationId": "embedding_model_create",
+                "parameters": [
+                    {
+                        "description": "embedding model parameter",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.EmbeddingModelParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.EmbeddingModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/embedding_models/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return embedding model by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EmbeddingModel"
+                ],
+                "summary": "return embedding model by id",
+                "operationId": "embedding_model_get_by_id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "embedding model id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.EmbeddingModel"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "updates embedding model",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EmbeddingModel"
+                ],
+                "summary": "updates embedding model",
+                "operationId": "embedding_model_update",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "embedding model id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "embedding model parameter",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.EmbeddingModelParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.EmbeddingModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/embedding_models/{id}/{action}": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "delete or restore embedding model",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EmbeddingModel"
+                ],
+                "summary": "delete or restore embedding model",
+                "operationId": "embedding_model_delete",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "embedding model id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "action : delete | restore ",
+                        "name": "action",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.EmbeddingModel"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/personas": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return list of allowed personas",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Persona"
+                ],
+                "summary": "return list of allowed personas",
+                "operationId": "personas_get_all",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "true for include deleted personas",
+                        "name": "archived",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Persona"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "create persona",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Persona"
+                ],
+                "summary": "create persona",
+                "operationId": "persona_create",
+                "parameters": [
+                    {
+                        "description": "persona payload",
+                        "name": "id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.PersonaParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Persona"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/personas/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return persona by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Persona"
+                ],
+                "summary": "return persona by id",
+                "operationId": "persona_get_by_id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "persona id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Persona"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "update persona",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Persona"
+                ],
+                "summary": "update persona",
+                "operationId": "persona_update",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "persona id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "persona payload",
+                        "name": "id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.PersonaParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Persona"
+                        }
+                    }
+                }
+            }
+        },
+        "/manage/personas/{id}/{action}": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "delete or restore persona",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Persona"
+                ],
+                "summary": "delete or restore persona",
+                "operationId": "persona_delete_restore",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "persona id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "action : delete | restore ",
+                        "name": "action",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Persona"
+                        }
+                    }
+                }
+            }
+        },
+        "/tenant/user_info": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get user info",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tenant"
+                ],
+                "summary": "get user info",
+                "operationId": "tenant_get_user_info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/tenant/users": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "return list of users",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tenant"
+                ],
+                "summary": "return list of users",
+                "operationId": "tenant_get_users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.User"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "add new user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tenant"
+                ],
+                "summary": "add new user",
+                "operationId": "tenant_add_user",
+                "parameters": [
+                    {
+                        "description": "create user parameter",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.AddUserParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/tenant/users/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "edit  user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tenant"
+                ],
+                "summary": "edit user",
+                "operationId": "tenant_edit_user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "edit user parameter",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/parameters.EditUserParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "decimal.NullDecimal": {
+            "type": "object",
+            "properties": {
+                "decimal": {
+                    "type": "number"
+                },
+                "valid": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.ChatMessage": {
+            "type": "object",
+            "properties": {
+                "chat_session_id": {
+                    "type": "number"
+                },
+                "citations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DocumentResponse"
+                    }
+                },
+                "error": {
+                    "type": "string"
+                },
+                "feedback": {
+                    "$ref": "#/definitions/model.ChatMessageFeedback"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "latest_child_message": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "type": "string"
+                },
+                "parent_message": {
+                    "type": "number"
+                },
+                "rephrased_query": {
+                    "type": "string"
+                },
+                "time_sent": {
+                    "type": "string"
+                },
+                "token_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.ChatMessageFeedback": {
+            "type": "object",
+            "properties": {
+                "chat_message_id": {
+                    "type": "number"
+                },
+                "feedback": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "up_votes": {
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ChatSession": {
+            "type": "object",
+            "properties": {
+                "creation_date": {
+                    "type": "string"
+                },
+                "deleted_date": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ChatMessage"
+                    }
+                },
+                "one_shot": {
+                    "type": "boolean"
+                },
+                "persona": {
+                    "$ref": "#/definitions/model.Persona"
+                },
+                "persona_id": {
+                    "type": "number"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Connector": {
+            "type": "object",
+            "properties": {
+                "connector_specific_config": {
+                    "$ref": "#/definitions/model.JSONMap"
+                },
+                "creation_date": {
+                    "type": "string"
+                },
+                "deleted_date": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "docs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Document"
+                    }
+                },
+                "docs_map": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/model.Document"
+                    }
+                },
+                "id": {
+                    "type": "number"
+                },
+                "last_successful_analysis": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "last_update": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "refresh_freq": {
+                    "type": "integer"
+                },
+                "source": {
+                    "$ref": "#/definitions/model.SourceType"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "$ref": "#/definitions/uuid.NullUUID"
+                },
+                "total_docs_indexed": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Document": {
+            "type": "object",
+            "properties": {
+                "analyzed": {
+                    "type": "boolean"
+                },
+                "chunking_session": {
+                    "$ref": "#/definitions/uuid.NullUUID"
+                },
+                "connector_id": {
+                    "type": "number"
+                },
+                "creation_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "last_update": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "parent_id": {
+                    "$ref": "#/definitions/decimal.NullDecimal"
+                },
+                "signature": {
+                    "type": "string"
+                },
+                "source_id": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.DocumentResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "document_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "message_id": {
+                    "type": "number"
+                },
+                "updated_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.EmbeddingModel": {
+            "type": "object",
+            "properties": {
+                "creation_date": {
+                    "type": "string"
+                },
+                "deleted_date": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_update": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "model_dim": {
+                    "type": "integer"
+                },
+                "model_id": {
+                    "type": "string"
+                },
+                "model_name": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.JSONMap": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "model.LLM": {
+            "type": "object",
+            "properties": {
+                "api_key": {
+                    "type": "string"
+                },
+                "creation_date": {
+                    "type": "string"
+                },
+                "deleted_date": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "endpoint": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "last_update": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "model_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Persona": {
+            "type": "object",
+            "properties": {
+                "chat_sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ChatSession"
+                    }
+                },
+                "creation_date": {
+                    "type": "string"
+                },
+                "default_persona": {
+                    "type": "boolean"
+                },
+                "deleted_date": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "display_priority": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "is_visible": {
+                    "type": "boolean"
+                },
+                "last_update": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "llm": {
+                    "$ref": "#/definitions/model.LLM"
+                },
+                "llm_id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prompt": {
+                    "$ref": "#/definitions/model.Prompt"
+                },
+                "starter_messages": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "tenant_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Prompt": {
+            "type": "object",
+            "properties": {
+                "creation_date": {
+                    "type": "string"
+                },
+                "deleted_date": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "number"
+                },
+                "last_update": {
+                    "$ref": "#/definitions/pg.NullTime"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "persona_id": {
+                    "type": "number"
+                },
+                "system_prompt": {
+                    "type": "string"
+                },
+                "task_prompt": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SourceType": {
+            "type": "string",
+            "enum": [
+                "ingestion_api",
+                "slack",
+                "web",
+                "google_drive",
+                "gmail",
+                "requesttracker",
+                "github",
+                "gitlab",
+                "guru",
+                "bookstack",
+                "confluence",
+                "slab",
+                "jira",
+                "productboard",
+                "file",
+                "notion",
+                "zulip",
+                "linear",
+                "hubspot",
+                "document360",
+                "gong",
+                "google_sites",
+                "zendesk",
+                "loopio",
+                "sharepoint",
+                "one-drive",
+                "msteams",
+                "youtube"
+            ],
+            "x-enum-varnames": [
+                "SourceTypeIngestionApi",
+                "SourceTypeSlack",
+                "SourceTypeWEB",
+                "SourceTypeGoogleDrive",
+                "SourceTypeGMAIL",
+                "SourceTypeRequesttracker",
+                "SourceTypeGithub",
+                "SourceTypeGitlab",
+                "SourceTypeGuru",
+                "SourceTypeBookstack",
+                "SourceTypeConfluence",
+                "SourceTypeSlab",
+                "SourceTypeJira",
+                "SourceTypeProductboard",
+                "SourceTypeFile",
+                "SourceTypeNotion",
+                "SourceTypeZulip",
+                "SourceTypeLinear",
+                "SourceTypeHubspot",
+                "SourceTypeDocument360",
+                "SourceTypeGong",
+                "SourceTypeGoogleSites",
+                "SourceTypeZendesk",
+                "SourceTypeLoopio",
+                "SourceTypeSharepoint",
+                "SourceTypeOneDrive",
+                "SourceTypeMsTeams",
+                "SourceTypeYoutube"
+            ]
+        },
+        "model.SourceTypeDescription": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "$ref": "#/definitions/model.SourceType"
+                },
+                "isImplemented": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Tenant": {
+            "type": "object",
+            "properties": {
+                "configuration": {
+                    "$ref": "#/definitions/model.JSONMap"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tenant": {
+                    "$ref": "#/definitions/model.Tenant"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "parameters.AddUserParam": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "parameters.CreateChatMessageRequest": {
+            "type": "object",
+            "properties": {
+                "chat_session_id": {
+                    "type": "number"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "no_ai_answer": {
+                    "type": "boolean"
+                },
+                "parent_message_id": {
+                    "type": "number"
+                },
+                "prompt_id": {
+                    "type": "number"
+                },
+                "query_override": {
+                    "description": "RetrievalOptions RetrievalDetails  `json:\"retrieval_options,omitempty\"`",
+                    "type": "string"
+                },
+                "search_doc_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        "parameters.CreateChatSession": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "one_shot": {
+                    "type": "boolean"
+                },
+                "persona_id": {
+                    "type": "number"
+                }
+            }
+        },
+        "parameters.CreateConnectorParam": {
+            "type": "object",
+            "properties": {
+                "connector_specific_config": {
+                    "$ref": "#/definitions/model.JSONMap"
+                },
+                "disabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "refresh_freq": {
+                    "type": "integer"
+                },
+                "shared": {
+                    "type": "boolean"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "parameters.EditUserParam": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "parameters.EmbeddingModelParam": {
+            "type": "object",
+            "properties": {
+                "is_active": {
+                    "type": "boolean"
+                },
+                "model_dim": {
+                    "type": "integer"
+                },
+                "model_id": {
+                    "type": "string"
+                },
+                "model_name": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "parameters.MessageFeedbackParam": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "vote": {
+                    "type": "string"
+                }
+            }
+        },
+        "parameters.PersonaParam": {
+            "type": "object",
+            "properties": {
+                "api_key": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "endpoint": {
+                    "type": "string"
+                },
+                "model_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "starter_messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/parameters.StarterMessage"
+                    }
+                },
+                "system_prompt": {
+                    "type": "string"
+                },
+                "task_prompt": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "parameters.StarterMessage": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "parameters.UpdateConnectorParam": {
+            "type": "object",
+            "properties": {
+                "connector_specific_config": {
+                    "$ref": "#/definitions/model.JSONMap"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "refresh_freq": {
+                    "type": "integer"
+                },
+                "shared": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pg.NullTime": {
+            "type": "object",
+            "properties": {
+                "time.Time": {
+                    "type": "string"
+                }
+            }
+        },
+        "uuid.NullUUID": {
+            "type": "object",
+            "properties": {
+                "uuid": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if UUID is not NULL",
+                    "type": "boolean"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

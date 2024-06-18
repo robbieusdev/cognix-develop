@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embedder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: embedder
+  template:
+    metadata:
+      labels:
+        app: embedder
+    spec:
+      containers:
+      - name: embedder
+        image: cognixacr.azurecr.io/cognix/embedder:main
+        envFrom:
+        - configMapRef:
+            name: embedder-srv
+        ports:
+        - containerPort: 50051
+        volumeMounts:
+        - mountPath: /models
+          name: models
+        imagePullPolicy: Always
+      imagePullSecrets:
+        - name: pullsecret
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: models
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: embedder
+spec:
+  selector:
+    app: embedder
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: models
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: azurefile-csi

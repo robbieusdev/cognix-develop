@@ -1,0 +1,341 @@
+# cluster rag.cognix versions
+# milvus:v2.4.0
+# nats:2.10.14
+# cockroach-operator:v2.12.0 which is using cockroach:v23.1.11
+
+# need to do give docker permissions on loval volumes
+# id -gn    # to find out the group name for your user:
+# Use the group name obtained from the above command to set the correct permissions. Assuming the output of id -gn is staff, the command would be:
+# sudo chown -R $(whoami):staff /Users/gp/Developer/cognix/data
+# sudo chown -R $(whoami):staff /Users/gp/Developer/cognix/data
+# Create the Required Directories:
+# sudo mkdir -p /Users/gp/Developer/cognix/data/etcd
+# sudo mkdir -p /Users/gp/Developer/cognix/data/minio
+# sudo mkdir -p /Users/gp/Developer/cognix/data/cockroach
+# sudo mkdir -p /Users/gp/Developer/cognix/data/nats
+# sudo mkdir -p /Users/gp/Developer/cognix/data/milvus
+# TODO: add the new folders needed for observability (all container involved)
+# Set Correct Permissions:
+# sudo chown -R $(whoami):staff /Users/gp/Developer/cognix/data
+# sudo chmod -R 755 YOUR_PATH/cognix/data/
+# Run Docker Compose with Sudo:
+# sudo docker-compose -f deployment/docker-compose-test.yaml up
+
+# container versioning
+# er use the semantic versioning as described here https://semver.org/
+
+version: '3.8'
+networks:
+  cognix-network:
+    # external: true
+    name: cognix-network
+
+services:
+  embedder:
+    container_name: embedder
+    image: gen-mind/cognix-embedder:latest
+    build:
+      context: ../src/backend/embedder
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    volumes:
+      - ${DATA_PATH}/models:/models
+    env_file:
+      - ${CONFIG_PATH}/embedder_srv.env
+    restart: always
+    networks:
+      - cognix-network
+
+  semantic:
+    # container_name: semantic
+    image: gen-mind/cognix-semantic:latest
+    build:
+      context: ../src/backend/semantic
+      dockerfile: Dockerfile
+    volumes:
+      - ${DATA_PATH}/temp:/temp
+    env_file:
+      - ${CONFIG_PATH}/semantic_srv.env
+      - ${CONFIG_PATH}/milvus_cli.env
+      - ${CONFIG_PATH}/nats_cli.env
+      - ${CONFIG_PATH}/embedder_cli.env
+      - ${CONFIG_PATH}/cockroach_cli.env
+      - ${CONFIG_PATH}/minio_cli.env
+    restart: always
+    ports:
+      - "3434:8080"
+    healthcheck:
+      test: "curl --silent --fail http://localhost:8080/healthz > /dev/null || exit 1"
+      interval: 60s
+      start_period: 10s
+      timeout: 3s
+      retries: 3
+    depends_on:
+      - milvus
+      - nats
+      - cockroach
+      - minio
+    networks:
+      - cognix-network
+
+  cognix-web:
+    container_name: web-ui
+    image: gen-mind/cognix-web:latest
+    build:
+      context: ../src/web
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:80"
+    environment:
+      VITE_PLATFORM_API_URL: http://api:8080
+    env_file:
+      - ${CONFIG_PATH}/web_srv.env
+    depends_on:
+      - api
+    restart: always
+    networks:
+      - cognix-network
+
+  api:
+    container_name: api
+    image: gen-mind/cognix-api:latest
+    build:
+      context: ${BACKEND_PATH}
+      args:
+        service: api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - ${CONFIG_PATH}/api_srv.env
+      - ${CONFIG_PATH}/cockroach_cli.env
+      - ${CONFIG_PATH}/minio_cli.env
+      - ${CONFIG_PATH}/milvus_cli.env
+      - ${CONFIG_PATH}/nats_cli.env
+      - ${CONFIG_PATH}/embedder_cli.env
+      - ${CONFIG_PATH}/.env
+    depends_on:
+      - cockroach
+      - minio
+      - milvus
+      - nats
+    restart: always
+    networks:
+      - cognix-network
+
+  orchestrator:
+    container_name: orchestrator
+    image: gen-mind/cognix-orchestrator:latest
+    build:
+      context: ${BACKEND_PATH}
+      args:
+        service: orchestrator
+      dockerfile: Dockerfile
+    env_file:
+      - ${CONFIG_PATH}/orchestrator_srv.env
+      - ${CONFIG_PATH}/cockroach_cli.env
+      - ${CONFIG_PATH}/nats_cli.env
+      - ${CONFIG_PATH}/.env
+    depends_on:
+      - cockroach
+      - minio
+      - nats
+    restart: always
+    networks:
+      - cognix-network
+
+  connector:
+    container_name: connector
+    image: gen-mind/cognix-connector:latest
+    build:
+      context: ${BACKEND_PATH}
+      args:
+        service: connector
+      dockerfile: Dockerfile
+    env_file:
+      - ${CONFIG_PATH}/connector_srv.env
+      - ${CONFIG_PATH}/cockroach_cli.env
+      - ${CONFIG_PATH}/nats_cli.env
+      - ${CONFIG_PATH}/milvus_cli.env
+      - ${CONFIG_PATH}/minio_cli.env
+      - ${CONFIG_PATH}/oauth_cli.env
+      - ${CONFIG_PATH}/.env
+    depends_on:
+      - cockroach
+      - minio
+      - nats
+    restart: always
+    networks:
+      - cognix-network
+
+  migration:
+    container_name: migration
+    image: gen-mind/cognix-migration:latest
+    build:
+      context: ${MIGRATION_PATH}
+      dockerfile: Dockerfile
+    volumes:
+      - ${MIGRATION_PATH}/versions:/versions
+    env_file:
+      - ${CONFIG_PATH}/cockroach_cli.env
+    depends_on:
+      - cockroach
+    networks:
+      - cognix-network
+
+  minio:
+    container_name: minio
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      - "../data/minio:/minio_data"
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - cognix-network
+
+  etcd:
+    container_name: etcd-1
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - "../data/etcd:/etcd"
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - cognix-network
+
+  milvus:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.3.0
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      # - "../src/config/milvus_srv.yaml:/milvus/configs/milvus.yaml"  # to pass config to milvus
+      - "../data/milvus:/var/lib/milvus"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    expose:
+      - 9091
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - cognix-network
+
+  milvus-attu:
+    container_name: milvus-attu
+    image: zilliz/attu:v2.4.0
+    environment:
+      MILVUS_URL: milvus:19530
+    ports:
+      - "13000:3000"
+    networks:
+      - cognix-network
+
+  # Milvus Admin is unmantained, use Attu instead
+  # milvus-admin:
+  #   image: milvusdb/milvus-insight:latest
+  # https://github.com/zilliztech/attu
+  
+  cockroach:
+    container_name: cockroach
+    image: cockroachdb/cockroach:latest-v23.2
+    ports:
+      - "26257:26257"
+      - "28080:8080"
+    # command: start-single-node --insecure
+    command: start-single-node --insecure --cache=1.5GiB --max-sql-memory=1.5GiB
+    volumes:
+      - "../data/cockroach:/cockroach/cockroach-data"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cognix-network
+
+  # natsmq configuration.
+  # more detail: https://docs.nats.io/running-a-nats-service/configuration
+  nats:
+    image: nats:latest
+    container_name: nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "6222:6222"
+    expose:
+      - 8222
+    volumes:
+      - nats-storage:/data/nats
+    command:
+      - "--name=nats"
+      - "--http_port=8222"
+      - "--js"
+      - "--sd=/data/nats"
+#    healthcheck:
+#        test: echo $$(wget --server-response http://nats:8222/varz 2>&1 | grep  '200 OK') | grep '200'  || exit 1
+#        interval: 20s
+#        timeout: 5s
+#        retries: 5
+#        start_period: 40s
+    networks:
+      - cognix-network
+
+  nats-dashboard:
+    image: mdawar/nats-dashboard
+    container_name: nats-dashboard
+    environment:
+      # The NATS monitoring server will be proxied on /proxy/* on the frontend.
+      # See: config/Caddyfile for the reverse proxy configuration.
+      REVERSE_PROXY_UPSTREAM: 'nats:8222'
+    volumes:
+      # Optional config file.
+      - ${CONFIG_PATH}/nats_config.json:/srv/config.json
+    ports:
+      - "8000:80"
+#      - target: 80
+#        published: 8000
+#        protocol: tcp
+    networks:
+      - cognix-network
+
+volumes:
+  nats-storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../data/nats

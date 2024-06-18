@@ -1,0 +1,323 @@
+# docker network create cognix-network
+#if network does not exists
+version: '3.8'
+networks:
+  cognix-network:
+    # external: true
+    name: cognix-network
+
+
+services:
+  embedder:
+    container_name: embedder
+    image: cognix/embedder:latest
+    build:
+      context: ../src/backend/embedder
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    volumes:
+      - ${DATA_PATH}/models:/models
+    env_file:
+      - ${CONFIG_PATH}/embedder.env
+    restart: always
+    networks:
+      - cognix-network
+  
+  semantic:
+    container_name: semantic
+    image: cognix/semantic:latest
+    build:
+      context: ../src/backend/semantic
+      dockerfile: Dockerfile
+    # ports:
+    #   - "50051:50051"
+    # volumes:
+    #   - ${DATA_PATH}/models:/models
+    env_file:
+      - ${CONFIG_PATH}/semantic.env
+    restart: always
+    networks:
+      - cognix-network
+
+  # api:
+  #   container_name: api
+  #   image: cognix:api
+  #   build:
+  #     context: ${BACKEND_PATH}
+  #     args:
+  #       service: api
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     PORT: 8080
+  #     STORAGE_PATH: /storage_volume/data
+  #     UI_URL: http://localhost:8080/
+  #     MILVUS_URL: host.docker.internal:19530
+  #   ports:
+  #     - "8080:8080"
+  #   env_file:
+  #     - ${CONFIG_PATH}/cockroach.env
+  #     - ${CONFIG_PATH}/minio.env
+  #     - ${CONFIG_PATH}/nats.env
+  #     - ${CONFIG_PATH}/embedder.env
+  #     - ${CONFIG_PATH}/.env
+  #   volumes:
+  #     - ${BACKEND_PATH}:/backend
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   networks:
+  #     - cognix-network
+
+  # orchestrator:
+  #   container_name: orchestrator
+  #   image: cognix:orchestrator
+  #   build:
+  #     context: ${BACKEND_PATH}
+  #     args:
+  #       service: orchestrator
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - ${CONFIG_PATH}/cockroach.env
+  #     - ${CONFIG_PATH}/nats.env
+  #     - ${CONFIG_PATH}/pulsar.env
+  #     - ${CONFIG_PATH}/.env
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   volumes:
+  #     - ${BACKEND_PATH}:/backend
+  #   networks:
+  #     - cognix-network
+
+  # connector:
+  #   container_name: connector
+  #   image: cognix:connector
+  #   build:
+  #     context: ${BACKEND_PATH}
+  #     args:
+  #       service: connector
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - ${CONFIG_PATH}/cockroach.env
+  #     - ${CONFIG_PATH}/nats.env
+  #     - ${CONFIG_PATH}/.env
+  #   environment:
+  #     MILVUS_URL: host.docker.internal:19530
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   volumes:
+  #     - ${BACKEND_PATH}:/backend
+  #   networks:
+  #     - cognix-network
+
+  # migration:
+  #   container_name: connector
+  #   image: cognix:migration
+  #   build:
+  #     context: ${MIGRATION_PATH}
+  #     dockerfile: Dockerfile
+
+  #   volumes:
+  #     - ${MIGRATION_PATH}/versions:/versions
+  #   env_file:
+  #     - ${CONFIG_PATH}/cockroach.env
+  #   networks:
+  #     - cognix-network
+
+  # *****************************
+  #         MinIO   
+  # *****************************
+  # minio:
+  #   container_name: minio
+  #   image: minio/minio:RELEASE.2020-12-03T00-03-10Z
+  #   environment:
+  #     MINIO_ACCESS_KEY: minioadmin
+  #     MINIO_SECRET_KEY: minioadmin
+  #   volumes:
+  #     - "../data/minio:/minio_data"
+  #   command: minio server /minio_data
+  #   ports:
+  #    - "9000:9000"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+  #     interval: 30s
+  #     timeout: 20s
+  #     retries: 3
+  #   networks:
+  #     - cognix-network
+  
+  minio:
+    container_name: milvus-minio
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      # - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
+      - "../data/minio:/minio_data"
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - cognix-network
+  # *****************************
+  
+  # *****************************
+  #         Milvus   
+  # *****************************
+  # etcd:
+  #   container_name: etcd
+  #   image: quay.io/coreos/etcd:v3.5.0
+  #   environment:
+  #     - ETCD_AUTO_COMPACTION_MODE=revision
+  #     - ETCD_AUTO_COMPACTION_RETENTION=1000
+  #     - ETCD_QUOTA_BACKEND_BYTES=4294967296
+  #   volumes:
+  #     - "../data/etcd:/etcd"
+  #   command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+  #   networks:
+  #     - cognix-network
+  etcd:
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - "../data/etcd:/etcd"
+      # - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - cognix-network
+
+  # standalone:
+  #   container_name: milvus-standalone
+  #   image: milvusdb/milvus:v2.3.0
+  #   command: ["milvus", "run", "standalone"]
+  #   environment:
+  #     ETCD_ENDPOINTS: etcd:2379
+  #     MINIO_ADDRESS: minio:9000
+  #   volumes:
+  #     - "../data/milvus:/var/lib/milvus"
+  #   ports:
+  #     - "19530:19530"
+  #   depends_on:
+  #     - "etcd"
+  #     - "minio"
+  #   networks:
+  #     - cognix-network
+
+  standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.3.0
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - "../data/milvus:/var/lib/milvus"
+      # - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+    #   interval: 30s
+    #   start_period: 90s
+    #   timeout: 20s
+    #   retries: 3
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - "etcd"
+      - "minio"
+    networks:
+      - cognix-network
+  
+  # milvus-admin:
+  #   image: milvusdb/milvus-insight:latest
+  #   environment:
+  #     HOST_URL: http://localhost:8000
+  #     MILVUS_URL: host.docker.internal:19530
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   ports:
+  #     - "8000:3000"
+  #   networks:
+  #     - cognix-network
+  # *****************************
+
+  # *****************************
+  # cockroach
+  # *****************************
+  cockroach:
+    image: cockroachdb/cockroach:latest-v23.2
+    ports:
+      - "26257:26257"
+      - "28080:8080"
+    command: start-single-node --insecure
+    volumes:
+      - "../data/cockroach:/cockroach/cockroach-data"
+    networks:
+      - cognix-network
+    # *****************************
+  
+  # *****************************
+  # NATS
+  # *****************************
+  nats:
+    image: nats:latest  # Use the latest NATS image
+    container_name: nats
+    ports:
+      - "4222:4222"  # Client connections to NATS
+      - "8222:8222"  # HTTP monitoring port for NATS
+      - "6222:6222"  # Cluster port for NATS
+    volumes:
+      - nats-storage:/data/nats
+    command:
+      - "--name=nats"
+      - "--http_port=8222"
+      - "--js"
+      - "--sd=/data/nats"
+    networks:
+      - cognix-network
+  # not working atm but let's see if it works in some time
+  # https://github.com/piotrpersona/nats-streaming-ui
+  # nats-streaming-ui:
+  #   build: .
+  #   image: piotrpersona/nats-ui:latest
+  #   ports:
+  #     - "8282:8282"
+  #   networks:
+  #     - cognix-network
+
+volumes:
+  nats-storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../data/nats
+# *****************************
+
+
+
+
+
+# milvus-standalone  | [2024/05/26 23:27:26.246 +00:00] [WARN] [grpcclient/client.go:372] ["Server ID mismatch, start to reset connection"] [role=rootcoord] [error="rpc error: code = Unknown desc = expected=%!s(int64=410), actual=%!s(int64=411): server ID mismatch"]
+# milvus-standalone  | [2024/05/26 23:27:26.246 +00:00] [WARN] [client/client.go:133] ["ClientBase ReCall grpc first call get error "] [role=rootcoord] [address=] [error="err: rpc error: code = Unknown desc = expected=%!s(int64=410), actual=%!s(int64=411): server ID mismatch\n, /go/src/github.com/milvus-io/milvus/pkg/tracer/stack_trace.go:51 github.com/milvus-io/milvus/pkg/tracer.StackTrace\n/go/src/github.com/milvus-io/milvus/internal/util/grpcclient/client.go:378 github.com/milvus-io/milvus/internal/util/grpcclient.(*ClientBase[...]).ReCall\n/go/src/github.com/milvus-io/milvus/internal/distributed/rootcoord/client/client.go:133 github.com/milvus-io/milvus/internal/distributed/rootcoord/client.wrapGrpcCall[...]\n/go/src/github.com/milvus-io/milvus/internal/distributed/rootcoord/client/client.go:147 github.com/milvus-io/milvus/internal/distributed/rootcoord/client.(*Client).GetComponentStates\n/go/src/github.com/milvus-io/milvus/internal/util/componentutil/componentutil.go:34 github.com/milvus-io/milvus/internal/util/componentutil.WaitForComponentStates.func1\n/go/src/github.com/milvus-io/milvus/pkg/util/retry/retry.go:40 github.com/milvus-io/milvus/pkg/util/retry.Do\n/go/src/github.com/milvus-io/milvus/internal/util/componentutil/componentutil.go:58 github.com/milvus-io/milvus/internal/util/componentutil.WaitForComponentStates\n/go/src/github.com/milvus-io/milvus/internal/util/componentutil/componentutil.go:73 github.com/milvus-io/milvus/internal/util/componentutil.WaitForComponentHealthy\n/go/src/github.com/milvus-io/milvus/internal/distributed/datanode/service.go:285 github.com/milvus-io/milvus/internal/distributed/datanode.(*Server).init\n/go/src/github.com/milvus-io/milvus/internal/distributed/datanode/service.go:189 github.com/milvus-io/milvus/internal/distributed/datanode.(*Server).Run\n"]
+# milvus-standalone  | [2024/05/26 23:27:26.248 +00:00] [DEBUG] [sessionutil/session_util.go:559] ["SessionUtil GetSessions "] [prefix=rootcoord] [key=rootcoord] [address=172.18.0.8:53100]
+# milvus-standalone  | [2024/05/26 23:27:26.248 +00:00] [DEBUG] [client/client.go:109] ["RootCoordClient GetSessions success"] [address=172.18.0.8:53100] [serverID=410]
+# milvus-standalone  | [2024/05/26 23:27:26.248 +00:00] [WARN] [grpcclient/client.go:385] ["Server ID mismatch, start to reset connection"] [role=rootcoord] [error="rpc error: code = Unknown desc = expected=%!s(int64=410), actual=%!s(int64=411): server ID mismatch"]

@@ -1,0 +1,15 @@
+// gRPC Service
+syntax = "proto3";
+
+package com.embedd;
+option go_package = "backend/core/proto;proto";
+
+message TelemetryMessage {
+    string content = 1;
+    string model = 2;
+}
+
+
+service TelemetryService {
+    rpc Trace (TelemetryMessage) returns () {}
+}
